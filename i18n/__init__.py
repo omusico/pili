@@ -8,7 +8,6 @@ class I18n():
 
     def get(self, key):
         if self.type_ == 'file':
-            logging.info(type(self._get_file(key)))
             return self._get_file(key)
 
     def _get_file(self, key):
