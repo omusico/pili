@@ -10,7 +10,6 @@ class Base(webapp2.RequestHandler):
 
     def __init__(self, request, response):
         self.initialize(request, response)
-
         # get function list
         self._methods = []
         for func in self.__class__.__dict__:
@@ -18,10 +17,6 @@ class Base(webapp2.RequestHandler):
                 continue
             if self.__class__.__name__ == getattr(self, func).im_class.__name__:
                 self._methods.append(func)
-        self._init()
-
-    def _init(self):
-        pass
 
     def _index(self):
         pass
