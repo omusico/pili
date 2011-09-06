@@ -1,4 +1,4 @@
-import config
+# -*- coding: utf-8 -*-
 
 class I18n():
     def __init__(self, lang='en-US', path='i18n', type_='file'):
@@ -8,6 +8,7 @@ class I18n():
 
     def get(self, key):
         if self.type_ == 'file':
+            logging.info(type(self._get_file(key)))
             return self._get_file(key)
 
     def _get_file(self, key):
@@ -15,5 +16,5 @@ class I18n():
         if '.' in key:
             module, obj = key.rsplit('.', 1)
             module = self.path + '.' + module + '.' + self.lang.replace('-','_')
-            return getattr(__import__(module, None, None, [obj]), obj)
+            return getattr(__import__(module, None, None, [obj]), obj).decode('utf-8')
 
