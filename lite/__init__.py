@@ -211,8 +211,14 @@ def _echo(*args):
             else:
                 sys.stdout.write(str(txt))
 
-def _flush():
+def _flush(quit=None):
     _echo(_ob_get_clean())
+    if quit is not None:
+        exit(quit)
+
+def import_path(path):
+    module, obj = path.rsplit('.', 1)
+    return getattr(__import__(module, None, None, [obj]), obj)
 
 _liter = Lite()
 
