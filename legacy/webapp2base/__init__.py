@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
+from pili.ext import webapp2
 import re
 import types
 import inspect
 import os
 
-from pili import lite
-
-class Base(object):
+class Base(webapp2.RequestHandler):
     _methods = []
 
-    def __init__(self, url_prefix):
-        self.url_prefix = url_prefix
-        lite.init(globals())
+    def __init__(self, request, response):
+        self.initialize(request, response)
         # get function list
         self._methods = []
         for func in self.__class__.__dict__:
@@ -20,30 +18,18 @@ class Base(object):
             if self.__class__.__name__ == getattr(self, func).im_class.__name__:
                 self._methods.append(func)
 
-    def run(self):
-        if self.url_prefix + '/' == _ENV['PATH_INFO']:
-            output = self._index()
-        else:
-            pattern = re.compile("%s/?\/(\w+)\/?(.*)" % re.escape(self.url_prefix))
-            match = re.match(pattern, _ENV['PATH_INFO'])
-            output = self._request(match.group(1), match.group(2))
-
-        if output is not None:
-            echo(output)
-
     def _index(self):
         pass
 
     def _default(self, *args):
-        header('Status', '400 Bad Request')
-        flush()
+        self.response.set_status(400)
 
     def _error(self):
-        header('Status', '400 Bad Request')
-        flush()
+        self.response.set_status(400)
 
     # /<controller>/ or /<controller>/<args>... go for this
     def _request(self, *args):
+
         action = '_default'
         if args[0] in self._methods:
             action = args[0]
@@ -59,6 +45,23 @@ class Base(object):
             output = apply(method)
 
         if output is not None:
-            echo(output)
+            self.response.write(output)
+
+    def echo(self, text):
+        self.response.write(text)
 
 
+env = os.environ
+
+route = webapp2.Route
+create_app = webapp2.WSGIApplication
+
+def create_simple_route(prefix, handler):
+    return [
+        route(prefix + '/<:[a-z]\w+>/', handler=handler, handler_method='_request'),
+        route(prefix + '/<:[a-z]\w+>/<:.+>/', handler=handler, handler_method='_request'),
+        route(prefix + '/', handler=handler, handler_method='_index'),
+        route(prefix + '/<:.+>', handler=handler, handler_method='_default'),
+        ]
+        
+    

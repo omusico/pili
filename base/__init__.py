@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-from pili.ext import webapp2
 import re
 import types
 import inspect
 import os
 
-class Base(webapp2.RequestHandler):
+from pili import lite
+
+class Base(object):
     _methods = []
 
-    def __init__(self, request, response):
-        self.initialize(request, response)
+    def __init__(self, url_prefix):
+        self.url_prefix = url_prefix
+        lite.init(globals())
         # get function list
         self._methods = []
         for func in self.__class__.__dict__:
@@ -18,18 +20,30 @@ class Base(webapp2.RequestHandler):
             if self.__class__.__name__ == getattr(self, func).im_class.__name__:
                 self._methods.append(func)
 
+    def run(self):
+        if self.url_prefix + '/' == _ENV['PATH_INFO']:
+            output = self._index()
+        else:
+            pattern = re.compile("%s/?\/(\w+)\/?(.*)" % re.escape(self.url_prefix))
+            match = re.match(pattern, _ENV['PATH_INFO'])
+            output = self._request(match.group(1), match.group(2))
+
+        if output is not None:
+            echo(output)
+
     def _index(self):
         pass
 
     def _default(self, *args):
-        self.response.set_status(400)
+        header('Status', '400 Bad Request')
+        flush()
 
     def _error(self):
-        self.response.set_status(400)
+        header('Status', '400 Bad Request')
+        flush()
 
     # /<controller>/ or /<controller>/<args>... go for this
     def _request(self, *args):
-
         action = '_default'
         if args[0] in self._methods:
             action = args[0]
@@ -45,23 +59,6 @@ class Base(webapp2.RequestHandler):
             output = apply(method)
 
         if output is not None:
-            self.response.write(output)
-
-    def echo(self, text):
-        self.response.write(text)
+            echo(output)
 
 
-env = os.environ
-
-route = webapp2.Route
-create_app = webapp2.WSGIApplication
-
-def create_simple_route(prefix, handler):
-    return [
-        route(prefix + '/<:[a-z]\w+>/', handler=handler, handler_method='_request'),
-        route(prefix + '/<:[a-z]\w+>/<:.+>/', handler=handler, handler_method='_request'),
-        route(prefix + '/', handler=handler, handler_method='_index'),
-        route(prefix + '/<:.+>', handler=handler, handler_method='_default'),
-        ]
-        
-    
