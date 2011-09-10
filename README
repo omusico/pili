@@ -1,0 +1,40 @@
+"""Structure
+Stucture is free, you can custon yourself.
+"""
+apps/		# put your main script here
+models/		# put your datastore model here
+pili/		# pili engine library
+tpls/		# put your templates here
+app.yaml  	# Google App Engine settings, all url rewrite rules here
+
+
+""" Quick start
+Hello World
+"""
+Create apps/hello_world.py
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+from pili import lite
+
+def main():
+    lite.init(globals())
+    echo("Hello World")
+
+if __name__ == '__main__':
+    main()
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+That's all, very easy!
+You can see the result at  http://{host}:{port}/hello-world/
+PiliEngine provides useful function, such like
+  _GET['name'] to have GET parameter.
+  Same as _POST, _FILE and _COOKIE.
+  header("Cache-Control: no-cache, must-revalidate") to custom the header.
+  setcookie to set the cookie to browser client
+
+""" More functions are able to plugin
+  session, php function and datastore helper
+"""
+
+Please check http://piliengine.appspot.com/ for more info.
+
