@@ -6,12 +6,11 @@ import os
 
 from pili import lite
 
-class Base(object):
+class SimpleRoute(object):
     _methods = []
 
     def __init__(self, url_prefix):
-        self.url_prefix = url_prefix
-        lite.init(globals())
+        self.url_prefix = url_prefix.rstrip('/')
         # get function list
         self._methods = []
         for func in self.__class__.__dict__:
@@ -49,6 +48,9 @@ class Base(object):
             action = args[0]
         if args[0] + '_' in self._methods:
             action = args[0] + '_'
+        if args[0] == '' and len(args) == 1:
+            action = '_index'
+            args = ()
 
         method = getattr(self, action)
         if action == '_default':
@@ -61,4 +63,4 @@ class Base(object):
         if output is not None:
             echo(output)
 
-
+lite.init(globals())
